@@ -23,3 +23,10 @@ Route::post('/komik', [KomikController::class, 'store']);
 Route::get('/komik/{id}', [KomikController::class, 'show']);
 Route::put('/komik/{id}', [KomikController::class, 'update']);
 Route::delete('/komik/{id}', [KomikController::class, 'destroy']);
+
+// Pendefinisian kontroller untuk resource "anggota" menggunakan route API.`
+Route::get('/anggota', [App\Http\Controllers\AnggotaController::class, 'index']);
+Route::post('/anggota', [App\Http\Controllers\AnggotaController::class, 'store']);
+Route::get('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'show']);
+Route::put('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'update']);
+Route::delete('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'destroy']);
