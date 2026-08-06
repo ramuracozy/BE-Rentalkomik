@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreKomikRequest;
+use App\Http\Requests\UpdateKomikRequest;
+use App\Http\Resources\KomikResource;
 use Illuminate\Http\Request;
 use App\Models\Komik;
 
@@ -12,16 +15,20 @@ class KomikController extends Controller
      */
     public function index()
     {
-        return response()->json(Komik::all());
+        return KomikResource::collection(Komik::all());
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreKomikRequest $request)
     {
-        $komik = Komik::create($request->all());
-        return response()->json($komik, 201);
+        $komik = Komik::create($request->validated());
+
+        return response()->json([
+            'message' => 'Komik berhasil ditambahkan',
+            'data' => new KomikResource($komik)
+        ], 201);
     }
 
     /**
@@ -29,18 +36,20 @@ class KomikController extends Controller
      */
     public function show(string $id)
     {
-        $komik = Komik::findorFail($id);
-        return response()->json($komik);
+        return new KomikResource(Komik::findOrFail($id));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateKomikRequest $request, string $id)
     {
         $komik = Komik::findorFail($id);
-        $komik->update($request->all());
-        return response()->json($komik);
+        $komik->update($request->validated());
+        return response()->json([
+            'message' => 'Komik berhasil diperbarui',
+            'data' => new KomikResource($komik)
+        ]);
     }
 
     /**
@@ -48,8 +57,9 @@ class KomikController extends Controller
      */
     public function destroy(string $id)
     {
-        $komik = Komik::findorFail($id);
-        $komik->delete();
-        return response()->json(null, 204);
+        Komik::findorFail($id)->delete();
+        return response()->json([
+            'message' => 'Komik berhasil dihapus'
+        ], 200);
     }
 }
