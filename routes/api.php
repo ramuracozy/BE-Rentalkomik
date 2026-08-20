@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KomikController;
+use App\Http\Controllers\AnggotaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +11,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+// Pendefinisian kontroller untuk resource "peminjaman" menggunakan route API.
+Route::post('/peminjaman', [PeminjamanController::class, 'store']);
 
 // Pendefinisian kontroller untuk resource "kategori" menggunakan route API.
 Route::get('/kategori', [KategoriController::class, 'index']);
@@ -24,9 +29,9 @@ Route::get('/komik/{id}', [KomikController::class, 'show']);
 Route::put('/komik/{id}', [KomikController::class, 'update']);
 Route::delete('/komik/{id}', [KomikController::class, 'destroy']);
 
-// Pendefinisian kontroller untuk resource "anggota" menggunakan route API.`
-Route::get('/anggota', [App\Http\Controllers\AnggotaController::class, 'index']);
-Route::post('/anggota', [App\Http\Controllers\AnggotaController::class, 'store']);
-Route::get('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'show']);
-Route::put('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'update']);
-Route::delete('/anggota/{id}', [App\Http\Controllers\AnggotaController::class, 'destroy']);
+// Pendefinisian kontroller untuk resource "anggota" menggunakan route API.
+Route::get('/anggota', [AnggotaController::class, 'index']);
+Route::post('/anggota', [AnggotaController::class, 'store']);
+Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
+Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
+Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);

@@ -7,15 +7,16 @@ use App\Http\Requests\UpdateKomikRequest;
 use App\Http\Resources\KomikResource;
 use Illuminate\Http\Request;
 use App\Models\Komik;
+use App\Service\KomikService;
+use App\Traits\ApiResponse;
 
 class KomikController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use ApiResponse;
+    public function __construct(protected KomikService $komikService){}
     public function index()
     {
-        return KomikResource::collection(Komik::all());
+        return $this->success(KomikResource::collection($this->komikService->getAll()));
     }
 
     /**
@@ -25,10 +26,7 @@ class KomikController extends Controller
     {
         $komik = Komik::create($request->validated());
 
-        return response()->json([
-            'message' => 'Komik berhasil ditambahkan',
-            'data' => new KomikResource($komik)
-        ], 201);
+        return $this->success(new KomikResource($komik), 'Komik berhasil ditambahkan', 201);
     }
 
     /**
@@ -36,7 +34,7 @@ class KomikController extends Controller
      */
     public function show(string $id)
     {
-        return new KomikResource(Komik::findOrFail($id));
+        return $this->success(new KomikResource($this->komikService->getById($id)));
     }
 
     /**
@@ -46,10 +44,7 @@ class KomikController extends Controller
     {
         $komik = Komik::findorFail($id);
         $komik->update($request->validated());
-        return response()->json([
-            'message' => 'Komik berhasil diperbarui',
-            'data' => new KomikResource($komik)
-        ]);
+        return $this->success(new KomikResource($komik), 'Komik berhasil diperbarui');
     }
 
     /**
@@ -58,8 +53,6 @@ class KomikController extends Controller
     public function destroy(string $id)
     {
         Komik::findorFail($id)->delete();
-        return response()->json([
-            'message' => 'Komik berhasil dihapus'
-        ], 200);
+        return $this->success(null, 'Komik berhasil dihapus');
     }
 }
