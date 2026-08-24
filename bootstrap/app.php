@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -23,29 +24,40 @@ return Application::configure(basePath: dirname(__DIR__))
             if (! $request->is('api/*')) {
             return null;
             }
+
+            if ($e instanceof AuthenticationException) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kamu harus login dulu untuk akses endpoint ini.',
+                ], 401);
+            }
+
             if ($e instanceof ModelNotFoundException) {
-            return response()->json([
-            'success' => false,
-            'message' => 'Data tidak ditemukan.',
-            ], 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan.',
+                ], 404);
             }
+
             if ($e instanceof ValidationException) {
-            return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-            'errors' => $e->errors(),
-            ], $e->status);
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'errors' => $e->errors(),
+                ], $e->status);
             }
+
             if ($e instanceof HttpExceptionInterface) {
-            return response()->json([
-            'success' => false,
-            'message' => $e->getMessage() ?: 'Terjadi kesalahan.',
-            ], $e->getStatusCode());
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Terjadi kesalahan.',
+                ], $e->getStatusCode());
             }
-            return response()->json([
-            'success' => false,
-            'message' => $e->getMessage() ?: 'Terjadi kesalahan pada server.',
-            ], 500);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Terjadi kesalahan pada server.',
+                ], 500);
         });
     })
     ->create();
