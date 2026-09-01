@@ -13,7 +13,8 @@ class KategoriFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama_kategori' => fake()->randomElement(['Action', 'Romance', 'Comedy', 'Horror', 'Slice of Life', 'Fantasy', 'Mystery', 'Sports', 'Sci-Fi', 'Drama']),
+            // unique(): pastikan tidak ada nama kategori dummy yang kembar
+            'nama_kategori' => $this->faker->unique()->words(2, true),
         ];
     }
 }

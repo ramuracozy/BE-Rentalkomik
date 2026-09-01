@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Komik;
-use App\Models\Kategori;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,12 +13,12 @@ class KomikFactory extends Factory
     public function definition(): array
     {
         return [
-            'judul' => fake()->words(3, true),
-            'penulis' => fake()->name(),
-            'kategori_id' => Kategori::inRandomOrder()->first()?->id ?? Kategori::factory(),
-            'stok' => fake()->numberBetween(0, 10),
-            'status' => fake()->randomElement(['available', 'unavailable']),
-            'file_pdf' => null,
+        'judul' => $this->faker->sentence(3),
+        'penulis' => $this->faker->name(),
+        'kategori_id' => $this->faker->numberBetween(1, 5),
+        'stok' => $this->faker->numberBetween(1, 20),
+        'status' => $this->faker->randomElement(['available', 'unavailable']),
+        'file_pdf' => $this->faker->optional(0.5)->passthrough($this->faker->word() . '.pdf'),
         ];
     }
 }

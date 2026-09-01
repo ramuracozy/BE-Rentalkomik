@@ -6,16 +6,25 @@ use App\Http\Requests\StoreAnggotaRequest;
 use App\Http\Requests\UpdateAnggotaRequest;
 use App\Http\Resources\AnggotaResource;
 use App\Models\Anggota;
-use Illuminate\Http\Request;
+use App\Services\AnggotaService;
+use App\Traits\ApiResponse;
 
 class AnggotaController extends Controller
 {
+
+    use ApiResponse;
+
+    public function __construct(protected AnggotaService $anggotaService) {}
+    
     /**
      * menampilkan data semua anggota.
      */
     public function index()
     {
-        return AnggotaResource::collection(Anggota::all());
+        $anggota = $this->anggotaService->index();
+        return $this->success(
+            AnggotaResource::collection($anggota),'Daftar anggota berhasil diambil.'
+        );
     }
 
     /**
@@ -23,11 +32,9 @@ class AnggotaController extends Controller
      */
     public function store(StoreAnggotaRequest $request)
     {
-        $anggota = Anggota::create($request->validated());
-        return response()->json([
-            'message' => 'Anggota berhasil ditambahkan',
-            'data' => $anggota
-        ], 201);
+        $anggota = $this->anggotaService->store($request->validated());
+        return $this->success(new AnggotaResource($anggota), 'Anggota berhasil ditamba
+        hkan.', 201);
     }
 
     /**

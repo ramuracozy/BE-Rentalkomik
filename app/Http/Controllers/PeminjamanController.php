@@ -2,44 +2,82 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Komik;
-use App\Models\Peminjaman;
+use App\Http\Requests\StorePeminjamanRequest;
+use App\Http\Requests\UpdatePeminjamanRequest;
+use App\Http\Resources\PeminjamanResource;
 use App\Services\PeminjamanService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Traits\ApiResponse;
+use DomainException;
+use RuntimeException;
 
 class PeminjamanController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(protected PeminjamanService $peminjamanService){}
 
-    public function store(Request $request)
+    public function index()
     {
-        $data = $request->validate([
-            'anggota_id' => 'required|exists:anggota,id',
-            'komik_id' => 'required|exists:komiks,id',
-            'tanggal_pinjam' => 'required|date',
-        ]);
+        $peminjaman = $this->peminjamanService->index();
+        return $this->success(
+        PeminjamanResource::collection($peminjaman),
+        'Daftar peminjaman berhasil diambil.'
+        );
+    }
 
-       $komik = Komik::findOrFail($data['komik_id']);
-
-        if ($komik->stok < 1) {
-            throw new \Exception('Stok komik habis');
+    public function store(StorePeminjamanRequest $request)
+    {
+         try {
+            $peminjaman = $this->peminjamanService->store($request->validated());
+        } catch (RuntimeException $e) {
+            // Guard stok gagal — kembalikan 400 dengan pesan yang informatif
+            return $this->error($e->getMessage(), 400);
         }
+        return $this->success(
+            new PeminjamanResource($peminjaman),
+            'Peminjaman berhasil dicatat.',
+            201
+        );
+    }
 
-        $peminjaman = DB::transaction(function () use ($data, $komik) {
-            $peminjaman = Peminjaman::create([
-                'anggota_id' => $data['anggota_id'],
-                'komik_id' => $data['komik_id'],
-                'tanggal_pinjam' => $data['tanggal_pinjam'],
-                'status' => 'dipinjam',
-            ]);
+    public function show(string $id)
+    {
+        $peminjaman = $this->peminjamanService->show($id);
+        return $this->success(
+            new PeminjamanResource($peminjaman),
+            'Detail peminjaman berhasil diambil.'
+        );
+    }
 
-            $komik->decrement('stok');
+    public function update(UpdatePeminjamanRequest $request, string $id)
+    {
+        $peminjaman = $this->peminjamanService->update($id, $request->validated());
+        return $this->success(
+            new PeminjamanResource($peminjaman),
+            'Peminjaman berhasil diperbarui.'
+        );
+    }
 
-            return $peminjaman;
-        });
+    public function destroy(string $id)
+    {
+        $this->peminjamanService->destroy($id);
+        return $this->success(
+            null,
+            'Peminjaman berhasil dihapus.'
+        );
+    }
 
-        return response()->json($peminjaman->fresh(), 201);
-    
+    public function kembali(string $id)
+    {
+        try {
+            $peminjaman = $this->peminjamanService->kembali($id);
+        } catch (DomainException $e) {
+            // Sudah dikembalikan sebelumnya
+            return $this->error($e->getMessage(), 400);
+        }
+        return $this->success(
+            new PeminjamanResource($peminjaman),
+            'Pengembalian komik berhasil.'
+        );
     }
 }

@@ -2,46 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kategori;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreKategoriRequest;
+use App\Http\Requests\UpdateKategoriRequest;
+use App\Http\Resources\KategoriResource;
+use App\Services\KategoriService;
+use App\Traits\ApiResponse;
 
 class KategoriController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(private KategoriService $kategoriService) {}
+
     public function index()
     {
-        return Kategori::all();
+        $kategori = $this->kategoriService->index();
+        return $this->success(
+            KategoriResource::collection($kategori),
+            'Daftar kategori berhasil diambil.'
+        );
     }
 
-    public function store(Request $request)
+    public function store(StoreKategoriRequest $request)
     {
-        $Kategori = Kategori::create($request->all());
-        return response()->json([
-            'message' => 'Kategori created successfully',
-            'data' => $Kategori
-        ], 201);
+        $kategori = $this->kategoriService->store($request->validated());
+        return $this->success(new KategoriResource($kategori), 'Kategori berhasil ditambahkan.', 201);
     }
 
     public function show(string $id)
     {
-        return Kategori::findOrFail($id);
+        $kategori = $this->kategoriService->show($id);
+        return $this->success(new KategoriResource($kategori), 'Detail kategori berhasil diambil.');
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateKategoriRequest $request, string $id)
     {
-        $Kategori = Kategori::findOrFail($id);
-        $Kategori->update($request->all());
-        return response()->json([
-            'message' => 'Kategori updated successfully',
-            'data' => $Kategori
-        ]);
+        $kategori = $this->kategoriService->update($id, $request->validated());
+        return $this->success(new KategoriResource($kategori), 'Kategori berhasil dipe
+        rbarui.');
     }
 
     public function destroy(string $id)
     {
-        $Kategori = Kategori::findOrFail($id);
-        $Kategori->delete();
-        return response()->json([
-            'message' => 'Kategori deleted successfully'
-        ]);
+        $this->kategoriService->destroy($id);
+        return $this->success(null, 'Kategori berhasil dihapus.');
     }
 }

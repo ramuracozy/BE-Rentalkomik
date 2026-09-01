@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
 
 class AuthController extends Controller
 {
@@ -12,21 +15,35 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-       $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+       $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required', 'string'],
         ]);
+       
+        $user = User::query()->where('email', $credentials['email'])->first();
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return $this->error('Email atau password tidak valid', 401);
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Email atau password salah.'],
+            ]);
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('admin-token')->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return $this->success([
             'user' => $user,
             'token' => $token,
         ], 'Login berhasil');
+    }
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user && method_exists($user, 'tokens')) {
+            $user->tokens()->delete();
+        }
+
+        return $this->success(null, 'Logout berhasil');
     }
 }

@@ -2,13 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\Komik;
-use Illuminate\Database\Seeder;
 
-class KomikSeeder extends Seeder
+use Illuminate\Database\Seeder;
+use App\Models\Peminjaman;
+
+class PeminjamanSeeder extends Seeder
 {
+    
     public function run(): void
     {
-        Komik::factory()->count(15)->create();
+        Peminjaman::factory(20)->create();
     }
 }

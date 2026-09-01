@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Peminjaman extends Model
 {
@@ -19,12 +20,12 @@ class Peminjaman extends Model
         'status',
     ];
 
-    public function anggota()
+    public function anggota(): BelongsTo
     {
         return $this->belongsTo(Anggota::class, 'anggota_id');
     }
 
-    public function komik()
+    public function komik(): BelongsTo
     {
         return $this->belongsTo(Komik::class, 'komik_id');
     }
